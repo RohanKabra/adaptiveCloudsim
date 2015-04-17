@@ -20,6 +20,8 @@ import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
 
+import adaptive.cloudsim.examples.MainExample;
+
 /**
  * Datacenter class is a CloudResource whose hostList are virtualized. It deals with processing of
  * VM queries (i.e., handling of VMs) instead of processing Cloudlet-related queries. So, even
@@ -255,6 +257,14 @@ public class Datacenter extends SimEntity {
 				updateCloudletProcessing();
 				checkCloudletCompletion();
 				break;
+				
+			case CloudSimTags.SUBMIT_CLOUDLETS:
+			    MainExample.createVmsActual(1, MainExample.scheduler);
+				break;
+				
+			case CloudSimTags.PERIODIC_PREDICTION:
+				MainExample.createVmsPredicted(1, MainExample.scheduler);
+				break;
 
 			// other unknown tags are processed by this method
 			default:
@@ -475,7 +485,8 @@ public class Datacenter extends SimEntity {
 			if (vm.isBeingInstantiated()) {
 				vm.setBeingInstantiated(false);
 			}
-
+			//Log.printLine(getVmAllocationPolicy().getHost(vm).getVmScheduler()
+				//	.getAllocatedMipsForVm(vm));
 			vm.updateVmProcessing(CloudSim.clock(), getVmAllocationPolicy().getHost(vm).getVmScheduler()
 					.getAllocatedMipsForVm(vm));
 		}
@@ -902,6 +913,7 @@ public class Datacenter extends SimEntity {
 		// if some time passed since last processing
 		// R: for term is to allow loop at simulation start. Otherwise, one initial
 		// simulation step is skipped and schedulers are not properly initialized
+		
 		if (CloudSim.clock() < 0.111 || CloudSim.clock() > getLastProcessTime() + 0.001) {
 			List<? extends Host> list = getVmAllocationPolicy().getHostList();
 			double smallerTime = Double.MAX_VALUE;
@@ -909,7 +921,11 @@ public class Datacenter extends SimEntity {
 			for (int i = 0; i < list.size(); i++) {
 				Host host = list.get(i);
 				// inform VMs to update processing
+				//WorkflowExample.scheduler.submitCloudlets();
 				double time = host.updateVmsProcessing(CloudSim.clock());
+				
+
+			
 				// what time do we expect that the next cloudlet will finish?
 				if (time < smallerTime) {
 					smallerTime = time;
@@ -1089,6 +1105,7 @@ public class Datacenter extends SimEntity {
 
 		// send the registration to GIS
 		sendNow(gisID, CloudSimTags.REGISTER_RESOURCE, getId());
+		
 		// Below method is for a child class to override
 		registerOtherEntity();
 	}

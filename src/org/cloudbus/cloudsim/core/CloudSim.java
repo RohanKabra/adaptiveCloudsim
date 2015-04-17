@@ -471,7 +471,7 @@ public class CloudSim {
 				ent.run();
 			}
 		}
-
+		
 		// If there are more future events then deal with them
 		if (future.size() > 0) {
 			List<SimEvent> toRemove = new ArrayList<SimEvent>();

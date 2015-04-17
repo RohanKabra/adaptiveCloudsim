@@ -265,6 +265,9 @@ public class CloudSimTags {
 
 	public static final int NextCycle = BASE + 48;
 
+	public static final int SUBMIT_CLOUDLETS = BASE+49; 
+	
+	public static final int PERIODIC_PREDICTION = BASE+50;
 	/** Private Constructor */
 	private CloudSimTags() {
 		throw new UnsupportedOperationException("CloudSim Tags cannot be instantiated");

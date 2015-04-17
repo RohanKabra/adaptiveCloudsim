@@ -9,6 +9,7 @@
 package org.cloudbus.cloudsim;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,6 +21,10 @@ import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
 import org.cloudbus.cloudsim.lists.CloudletList;
 import org.cloudbus.cloudsim.lists.VmList;
+
+import adaptive.cloudsim.TaskSubmitter;
+import adaptive.cloudsim.examples.MainExample;
+
 
 /**
  * DatacentreBroker represents a broker acting on behalf of a user. It hides VM management, as vm
@@ -69,7 +74,12 @@ public class DatacenterBroker extends SimEntity {
 
 	/** The datacenter characteristics list. */
 	protected Map<Integer, DatacenterCharacteristics> datacenterCharacteristicsList;
+	
+	public static boolean checksD = false ;
+	
+	public static boolean checksP = false ;
 
+	public static boolean staticVMProvisioning = false;
 	/**
 	 * Created a new DatacenterBroker object.
 	 * 
@@ -87,7 +97,7 @@ public class DatacenterBroker extends SimEntity {
 		setCloudletList(new ArrayList<Cloudlet>());
 		setCloudletSubmittedList(new ArrayList<Cloudlet>());
 		setCloudletReceivedList(new ArrayList<Cloudlet>());
-
+		
 		cloudletsSubmitted = 0;
 		setVmsRequested(0);
 		setVmsAcks(0);
@@ -165,6 +175,7 @@ public class DatacenterBroker extends SimEntity {
 			case CloudSimTags.END_OF_SIMULATION:
 				shutdownEntity();
 				break;
+
 			// other unknown tags are processed by this method
 			default:
 				processOtherEvent(ev);
@@ -220,12 +231,12 @@ public class DatacenterBroker extends SimEntity {
 		int datacenterId = data[0];
 		int vmId = data[1];
 		int result = data[2];
-
+		Log.printLine("VM created \n");
 		if (result == CloudSimTags.TRUE) {
 			getVmsToDatacentersMap().put(vmId, datacenterId);
 			getVmsCreatedList().add(VmList.getById(getVmList(), vmId));
 			Log.printLine(CloudSim.clock() + ": " + getName() + ": VM #" + vmId
-					+ " has been created in Datacenter #" + datacenterId + ", Host #"
+					+ " created in DC#" + datacenterId + ", Host #"
 					+ VmList.getById(getVmsCreatedList(), vmId).getHost().getId());
 		} else {
 			Log.printLine(CloudSim.clock() + ": " + getName() + ": Creation of VM #" + vmId
@@ -313,11 +324,12 @@ public class DatacenterBroker extends SimEntity {
 	 * @pre $none
 	 * @post $none
 	 */
-	protected void createVmsInDatacenter(int datacenterId) {
+	public void createVmsInDatacenter(int datacenterId) {
 		// send as much vms as possible for this datacenter before trying the next one
 		int requestedVms = 0;
 		String datacenterName = CloudSim.getEntityName(datacenterId);
 		for (Vm vm : getVmList()) {
+			//Log.print("hahaha");
 			if (!getVmsToDatacentersMap().containsKey(vm.getId())) {
 				Log.printLine(CloudSim.clock() + ": " + getName() + ": Trying to Create VM #" + vm.getId()
 						+ " in " + datacenterName);
@@ -403,6 +415,37 @@ public class DatacenterBroker extends SimEntity {
 		Log.printLine(getName() + " is shutting down...");
 	}
 
+	
+	
+	public void registerPeriodicChecks()
+	{
+		/** This loop will run for 100 (100 x 1 ms )ms  **/
+		int size = TaskSubmitter.getNoOfUniqueTimes().size();
+		
+	    if(!checksP)
+		{
+			for(int i=0 ; i<size ; i++)
+			send(MainExample.dcntr.getId(), 5+10*i , CloudSimTags.PERIODIC_PREDICTION);
+		}
+		if(!checksP) checksP = true ; 
+	}
+	
+	public void registerDynamicChecks()
+	{
+		Collection<Double> temp = TaskSubmitter.getNoOfUniqueTimes();
+		Log.printLine("checks no : " + temp);
+		if(!checksD) 
+		{
+		for(Double i : temp)
+		{
+			
+			Log.printLine(i+" sending... ");
+			send(MainExample.dcntr.getId(), i, CloudSimTags.SUBMIT_CLOUDLETS);
+		}
+		}
+		if(!checksD) checksD = true ;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see cloudsim.core.SimEntity#startEntity()
@@ -411,7 +454,11 @@ public class DatacenterBroker extends SimEntity {
 	public void startEntity() {
 		Log.printLine(getName() + " is starting...");
 		schedule(getId(), 0, CloudSimTags.RESOURCE_CHARACTERISTICS_REQUEST);
+		if(!staticVMProvisioning)registerPeriodicChecks();
+		registerDynamicChecks();
 	}
+	
+	
 
 	/**
 	 * Gets the vm list.
