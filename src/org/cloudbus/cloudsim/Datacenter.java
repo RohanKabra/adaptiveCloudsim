@@ -19,8 +19,10 @@ import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
-
+import org.cloudbus.cloudsim.DatacenterBroker;
 import adaptive.cloudsim.examples.MainExample;
+import adaptive.cloudsim.examples.RealTimeExample;
+import adaptive.cloudsim.examples.StaticExample;
 
 /**
  * Datacenter class is a CloudResource whose hostList are virtualized. It deals with processing of
@@ -259,11 +261,27 @@ public class Datacenter extends SimEntity {
 				break;
 				
 			case CloudSimTags.SUBMIT_CLOUDLETS:
-			    MainExample.createVmsActual(1, MainExample.scheduler);
+			    if(DatacenterBroker.staticVMProvisioning)
+			    	StaticExample.createVmsActual(0, StaticExample.scheduler);
+			    else if(DatacenterBroker.realTime)
+					try {
+						RealTimeExample.createVmsActual(0,RealTimeExample.scheduler);
+					} catch (InterruptedException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				else
+					try {
+						MainExample.createVmsActual(0, MainExample.scheduler);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				break;
 				
 			case CloudSimTags.PERIODIC_PREDICTION:
-				MainExample.createVmsPredicted(1, MainExample.scheduler);
+			    if(!DatacenterBroker.staticVMProvisioning && !DatacenterBroker.realTime)
+				MainExample.createVmsPredicted(0, MainExample.scheduler);
 				break;
 
 			// other unknown tags are processed by this method

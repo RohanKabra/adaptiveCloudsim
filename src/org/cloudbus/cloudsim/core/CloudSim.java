@@ -271,7 +271,7 @@ public class CloudSim {
 	protected static DeferredQueue deferred;
 
 	/** The simulation clock. */
-	private static double clock;
+	public static double clock;
 
 	/** Flag for checking if the simulation is running. */
 	private static boolean running;

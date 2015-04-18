@@ -24,6 +24,8 @@ import org.cloudbus.cloudsim.lists.VmList;
 
 import adaptive.cloudsim.TaskSubmitter;
 import adaptive.cloudsim.examples.MainExample;
+import adaptive.cloudsim.examples.RealTimeExample;
+import adaptive.cloudsim.examples.StaticExample;
 
 
 /**
@@ -80,6 +82,8 @@ public class DatacenterBroker extends SimEntity {
 	public static boolean checksP = false ;
 
 	public static boolean staticVMProvisioning = false;
+	
+	public static boolean realTime = false;
 	/**
 	 * Created a new DatacenterBroker object.
 	 * 
@@ -440,6 +444,12 @@ public class DatacenterBroker extends SimEntity {
 		{
 			
 			Log.printLine(i+" sending... ");
+			//MainExample.dcntr.getId();
+			if(staticVMProvisioning)
+			send(StaticExample.dcntr.getId(), i, CloudSimTags.SUBMIT_CLOUDLETS);
+			else if(realTime)
+			send(RealTimeExample.dcntr.getId(), i, CloudSimTags.SUBMIT_CLOUDLETS);
+			else
 			send(MainExample.dcntr.getId(), i, CloudSimTags.SUBMIT_CLOUDLETS);
 		}
 		}
@@ -454,7 +464,7 @@ public class DatacenterBroker extends SimEntity {
 	public void startEntity() {
 		Log.printLine(getName() + " is starting...");
 		schedule(getId(), 0, CloudSimTags.RESOURCE_CHARACTERISTICS_REQUEST);
-		if(!staticVMProvisioning)registerPeriodicChecks();
+		if(!staticVMProvisioning &&!realTime)registerPeriodicChecks();
 		registerDynamicChecks();
 	}
 	

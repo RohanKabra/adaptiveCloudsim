@@ -28,7 +28,7 @@ import adaptive.cloudsim.workflow.io.CloudletFileReader;
 import adaptive.cloudsim.workflow.scheduler.AbstractWorkflowScheduler;
 import adaptive.cloudsim.workflow.scheduler.DynamicScheduler;
 
-public class MainExample {
+public class RealTimeExample {
 	public static AbstractWorkflowScheduler scheduler = null; 
 	public static Datacenter dcntr = null;
 	public static int id;
@@ -37,10 +37,11 @@ public class MainExample {
 		double totalRuntime = 0;
 		Parameters.parseParameters(args);
 		AbstractWorkflowScheduler.staticVMProvisioning = false;
+		AbstractWorkflowScheduler.realTime = true;
 		try {
 			long startTime = System.currentTimeMillis();
 			for (int i = 0; i < Parameters.numberOfRuns; i++) {
-				MainExample ex = new MainExample();
+				RealTimeExample ex = new RealTimeExample();
 				if (!Parameters.outputDatacenterEvents) {
 					Log.disable();
 				}
@@ -111,23 +112,23 @@ public class MainExample {
 	
 	public static void createVmsPredicted(int run, AbstractWorkflowScheduler scheduler) {
 		// Create VMs
-		double arrivalRate = WorkLoadAnalyzer.getPredictedArrivalRate(0 , CloudSim.clock() + 10 , 5 , 5 );	
-		//Log.printLine("arrivale predicted rate : "+ (arrivalRate-scheduler.getIdleTaskSlots().size()) );
-//		Log.printLine("time is www " + CloudSim.clock());
-		double temp = arrivalRate-scheduler.getIdleTaskSlots().size();
-		Log.printLine("predicted arrival rate :"+ temp+" Time :"+CloudSim.clock());
-		
-		if (temp>0)
-		{
-			List<Vm> vmlist = createVMList(arrivalRate-scheduler.getIdleTaskSlots().size() ,  scheduler.getId(), run);
-			scheduler.submitVmList(vmlist);//Log.printLine("predicted size : "+ vmlist.size());
-			scheduler.createVmsInDatacenter(dcntr.getId());
-			//Log.printLine("vm predicted " + CloudSim.clock());
-		}
-		else
-		{
-			scheduler.submitCloudlets();
-		}
+//		double arrivalRate = WorkLoadAnalyzer.getPredictedArrivalRate(0 , CloudSim.clock() + 10 , 5 , 5 );	
+//		//Log.printLine("arrivale predicted rate : "+ (arrivalRate-scheduler.getIdleTaskSlots().size()) );
+////		Log.printLine("time is www " + CloudSim.clock());
+//		double temp = arrivalRate-scheduler.getIdleTaskSlots().size();
+//		Log.printLine("predicted arrival rate :"+ temp+" Time :"+CloudSim.clock());
+//		
+//		if (temp>0)
+//		{
+//			List<Vm> vmlist = createVMList(arrivalRate-scheduler.getIdleTaskSlots().size() ,  scheduler.getId(), run);
+//			scheduler.submitVmList(vmlist);//Log.printLine("predicted size : "+ vmlist.size());
+//			scheduler.createVmsInDatacenter(dcntr.getId());
+//			//Log.printLine("vm predicted " + CloudSim.clock());
+//		}
+//		else
+//		{
+//			scheduler.submitCloudlets();
+//		}
 		
 		
 	}
@@ -148,7 +149,7 @@ public class MainExample {
 		vmlist = createVMList(temp ,  scheduler.getId(), run);
 		//Log.printLine("actual size : "+ vmlist.size());
 		//CloudSim.clock+=(int)vmlist.size();
-		//Thread.sleep(5*(int)vmlist.size());
+		Thread.sleep(10*(int)vmlist.size());
 		scheduler.submitVmList(vmlist);
 		//Log.printLine("size : "+vmlist.size()+" actual arrival rate 1 :"+ actualArrival+"Time :"+CloudSim.clock());
 		scheduler.createVmsInDatacenter(dcntr.getId());
